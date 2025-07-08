@@ -1,0 +1,27 @@
+FROM continuumio/miniconda3:23.10.0-1
+
+COPY ./conda.yml /app/conda.yml
+RUN conda env create --name server --file /app/conda.yml
+
+# Initialize conda in bash config fiiles:
+RUN conda init bash
+RUN . /opt/conda/etc/profile.d/conda.sh
+
+# server start script
+COPY ./server/docker/run.sh /app/run.sh
+RUN chmod +x /app/run.sh
+
+COPY ./server/app /app/server/app/
+COPY ./server/batch /app/server/batch/
+
+COPY ./VERSION /app/server/VERSION
+
+ENV PORT=8001
+
+EXPOSE ${PORT}
+
+WORKDIR /app/server
+
+ENV PYTHONPATH=/app
+
+ENTRYPOINT ["/app/run.sh"]
